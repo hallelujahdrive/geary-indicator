@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"allowJs": true,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"outDir": "./build",
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": false,
+		"strict": true,
+		"target": "ES2022",
+		"typeRoots": ["src/@types"]
+	},
+	"include": ["ambient.d.ts", "src"]
+}

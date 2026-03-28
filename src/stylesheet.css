@@ -1,0 +1,7 @@
+/* Add your custom extension styling here */
+.geary-indicator-unread {
+	background-color: #e01b24;
+	border-radius: 4px;
+	height: 8px;
+	width: 8px;
+}
