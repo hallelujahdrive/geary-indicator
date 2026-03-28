@@ -11,6 +11,10 @@ Geary Indicator adds an icon to your tray to notify you of incoming mail in Gear
 - Adds an icon to the tray to check for incoming Geary mail
 - Provides a popup menu with actions
 
+## Screenshots
+
+<img alt="screenshot" src="docs/screenshot.png" max-width="100%" width="320px"></img>
+
 ## Installation
 
 ### Install from GNOME Extensions Website
