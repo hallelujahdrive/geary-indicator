@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# hallelujahdrive <EMAIL@ADDRESS>, YEAR.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
@@ -14,11 +14,11 @@ msgstr ""
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "Open Geary Mailbox"
-msgstr "Geary メールボックスを開く"
+msgstr "Geary を開く"
 
 msgid "Compose Message"
 msgstr "メッセージを作成"
@@ -30,7 +30,7 @@ msgid "Accounts"
 msgstr "アカウント"
 
 msgid "Quit Geary"
-msgstr "終了"
+msgstr "Geary を終了"
 
 msgid "Geary Indicator"
 msgstr ""

@@ -8,7 +8,7 @@
 		}
 	},
 	"env": {
-		"NAME": "impanel-with-osk",
+		"NAME": "geary-indicator",
 		"DOMAIN": "52hertz-reunion.site"
 	}
 }
