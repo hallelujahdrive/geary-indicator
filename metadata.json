@@ -3,5 +3,5 @@
 	"gettext-domain": "geary-indicator@52hertz-reunion.site",
 	"description": "Add Geary's indicator to the panel.",
 	"uuid": "geary-indicator@52hertz-reunion.site",
-	"shell-version": ["49"]
+	"shell-version": ["49", "50"]
 }
