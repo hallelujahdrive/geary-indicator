@@ -1,7 +1,8 @@
 {
-	"name": "Geary Indicator",
+	"description": "Geary Indicator adds an icon to your tray to notify you of incoming mail in Geary. It also provides a popup menu with several actions.",
 	"gettext-domain": "geary-indicator@52hertz-reunion.site",
-	"description": "Add Geary's indicator to the panel.",
-	"uuid": "geary-indicator@52hertz-reunion.site",
-	"shell-version": ["49", "50"]
+	"name": "Geary Indicator",
+	"shell-version": ["49", "50"],
+	"url": "https://github.com/hallelujahdrive/geary-indicator",
+	"uuid": "geary-indicator@52hertz-reunion.site"
 }
