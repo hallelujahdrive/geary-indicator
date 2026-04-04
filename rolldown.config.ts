@@ -26,7 +26,8 @@ export function removeRuntimeHelper(): RolldownPlugin {
 			const cleaned = code.replace(
 				/import ".\/chunk-[a-z0-9_!~{}]+\.js";\n?/g,
 				"",
-			);
+			).replace(/\/\/#region \\0rolldown\/runtime.js[\s\S]+?\/\/#endregion/g, "");
+
 			return { code: cleaned, map: null };
 		},
 	};

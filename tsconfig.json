@@ -11,5 +11,5 @@
 		"target": "ES2022",
 		"typeRoots": ["src/@types"]
 	},
-	"include": ["ambient.d.ts", "src"]
+	"include": ["src"]
 }
