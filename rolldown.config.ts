@@ -23,10 +23,12 @@ export function removeRuntimeHelper(): RolldownPlugin {
 		name: "remove-runtime-helper",
 		renderChunk(code) {
 			// remove runtime helper
-			const cleaned = code.replace(
-				/import ".\/chunk-[a-z0-9_!~{}]+\.js";\n?/g,
-				"",
-			).replace(/\/\/#region \\0rolldown\/runtime.js[\s\S]+?\/\/#endregion/g, "");
+			const cleaned = code
+				.replace(/import ".\/chunk-[a-z0-9_!~{}]+\.js";\n?/g, "")
+				.replace(
+					/\/\/#region \\0rolldown\/runtime.js[\s\S]+?\/\/#endregion/g,
+					"",
+				);
 
 			return { code: cleaned, map: null };
 		},
