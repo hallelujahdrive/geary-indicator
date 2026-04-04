@@ -3,12 +3,12 @@ DOMAIN=52hertz-reunion.site
 
 .PHONY: all pack install clean
 
-all: dist/extension.js dist/prefs.js dist/stylesheet.css
+all: dist/extension.js dist/stylesheet.css
 
 node_modules: package.json
 	bun install
 
-dist/extension.js dist/prefs.js: node_modules
+dist/extension.js: node_modules
 	bun run build
 
 dist/stylesheet.css: src/stylesheet.css
