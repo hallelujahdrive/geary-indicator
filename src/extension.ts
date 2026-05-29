@@ -14,10 +14,6 @@ export default class GearyIndicator extends Extension {
 	}
 
 	public enable() {
-		if (this._indicator) {
-			return;
-		}
-
 		this._indicator = new Indicator(0.5, _("Geary Indicator"));
 		Main.panel.addToStatusArea(this.uuid, this._indicator);
 	}

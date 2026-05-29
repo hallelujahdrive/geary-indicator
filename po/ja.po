@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "Open Geary Mailbox"
-msgstr "Geary を開く"
+msgstr "Gearyメールボックスを開く"
 
 msgid "Compose Message"
 msgstr "メッセージを作成"
@@ -30,7 +30,7 @@ msgid "Accounts"
 msgstr "アカウント"
 
 msgid "Quit Geary"
-msgstr "Geary を終了"
+msgstr "Gearyを終了"
 
 msgid "Geary Indicator"
 msgstr ""
