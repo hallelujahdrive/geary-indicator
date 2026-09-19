@@ -14,6 +14,36 @@ const GEARY_ID = "org.gnome.Geary";
 const GEARY_OBJECT_PATH = "/org/gnome/Geary";
 const INTERFACE_APPLICATION = "org.freedesktop.Application";
 
+function activateGeary() {
+	callGeary("Activate", new GLib.Variant("(a{sv})", [{}]));
+}
+
+function activateGearyAction(action: string) {
+	callGeary("ActivateAction", new GLib.Variant("(sava{sv})", [action, [], {}]));
+}
+
+function callGeary(method: string, parameters: GLib.Variant) {
+	Gio.bus_get_sync(Gio.BusType.SESSION, null)?.call(
+		GEARY_BUS_NAME,
+		GEARY_OBJECT_PATH,
+		INTERFACE_APPLICATION,
+		method,
+		parameters,
+		null,
+		Gio.DBusCallFlags.NONE,
+		-1,
+		null,
+	);
+}
+
+function gearyHasUnread() {
+	return Main.messageTray.getSources().some(isGearySource);
+}
+
+function isGearySource(source: { policy: { id: string } }) {
+	return source.policy.id === GEARY_ID;
+}
+
 const IndicatorIcon = GObject.registerClass(
 	class IndicatorIcon extends St.Widget {
 		private hasUnreadBadge: null | St.Widget = null;
@@ -45,19 +75,20 @@ const IndicatorIcon = GObject.registerClass(
 		}
 
 		public setHasUnread(hasUnread: boolean) {
+			if (hasUnread === !!this.hasUnreadBadge) return;
+
 			if (hasUnread) {
-				if (!this.hasUnreadBadge) {
-					this.hasUnreadBadge = new St.Widget({
-						styleClass: "geary-indicator-unread",
-						translationX: 8,
-						translationY: 6,
-						xAlign: Clutter.ActorAlign.END,
-						yAlign: Clutter.ActorAlign.END,
-					});
-				}
+				this.hasUnreadBadge = new St.Widget({
+					styleClass: "geary-indicator-unread",
+					translationX: 8,
+					translationY: 6,
+					xAlign: Clutter.ActorAlign.END,
+					yAlign: Clutter.ActorAlign.END,
+				});
 				this.add_child(this.hasUnreadBadge);
 			} else {
-				if (this.hasUnreadBadge) this.remove_child(this.hasUnreadBadge);
+				this.hasUnreadBadge?.destroy();
+				this.hasUnreadBadge = null;
 			}
 		}
 	},
@@ -65,13 +96,10 @@ const IndicatorIcon = GObject.registerClass(
 
 export const Indicator = GObject.registerClass(
 	class Indicator extends PanelMenu.Button {
-		private conn: Gio.DBusConnection | null;
-		// begin-remove
-		private hasUnread: boolean;
-		private icon: null | typeof IndicatorIcon.prototype = null;
-		private sourceAddId: null | number = null;
-		private sourceRemoved: null | number = null;
-		// end-remove
+		declare private icon: null | typeof IndicatorIcon.prototype;
+		declare private sourceAddedId: null | number;
+		declare private sourceRemovedId: null | number;
+
 		constructor(
 			menuAlignment: number,
 			nameText: string,
@@ -79,158 +107,64 @@ export const Indicator = GObject.registerClass(
 		) {
 			super(menuAlignment, nameText, dontCreateMenu);
 
-			this.conn = Gio.bus_get_sync(Gio.BusType.SESSION, null);
-
-			// Get geary notifications
-			this.hasUnread = Main.messageTray.getSources().some((source) => {
-				const policyId = source.policy.id;
-
-				return policyId === GEARY_ID;
-			});
-
-			this.icon = new IndicatorIcon(this.hasUnread);
+			this.icon = new IndicatorIcon(gearyHasUnread());
 			this.add_child(this.icon);
-
-			// initialize the icon
-			this.updateIcon();
-
-			// Add a listener for new sources
-			this.sourceAddId = Main.messageTray.connect(
-				"source-added",
-				(_, source) => {
-					const policyId = source.policy.id;
-
-					if (policyId === GEARY_ID) {
-						if (!this.hasUnread) {
-							this.hasUnread = true;
-							this.updateIcon();
-						}
-					}
-				},
-			);
-
-			this.sourceRemoved = Main.messageTray.connect(
-				"source-removed",
-				(_, source) => {
-					const policyId = source.policy.id;
-
-					if (policyId === GEARY_ID) {
-						if (this.hasUnread) {
-							this.hasUnread = false;
-							this.updateIcon();
-						}
-					}
-				},
-			);
-
-			const openMailboxItem = new PopupMenu.PopupMenuItem(
-				_("Open Geary Mailbox"),
-			);
-			openMailboxItem.connect("activate", () => {
-				this.conn?.call(
-					GEARY_BUS_NAME,
-					GEARY_OBJECT_PATH,
-					INTERFACE_APPLICATION,
-					"Activate",
-					new GLib.Variant("(a{sv})", [{}]),
-					null,
-					Gio.DBusCallFlags.NONE,
-					-1,
-					null,
-				);
-			});
-			this.menu.addMenuItem(openMailboxItem);
-
-			const composeMessageItem = new PopupMenu.PopupMenuItem(
-				_("Compose Message"),
-			);
-			composeMessageItem.connect("activate", () => {
-				this.conn?.call(
-					GEARY_BUS_NAME,
-					GEARY_OBJECT_PATH,
-					INTERFACE_APPLICATION,
-					"ActivateAction",
-					new GLib.Variant("(sava{sv})", ["compose", [], {}]),
-					null,
-					Gio.DBusCallFlags.NONE,
-					-1,
-					null,
-				);
-			});
-			this.menu.addMenuItem(composeMessageItem);
-
-			this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-			const preferencesItem = new PopupMenu.PopupMenuItem(_("Preferences"));
-			preferencesItem.connect("activate", () => {
-				this.conn?.call(
-					GEARY_BUS_NAME,
-					GEARY_OBJECT_PATH,
-					INTERFACE_APPLICATION,
-					"ActivateAction",
-					new GLib.Variant("(sava{sv})", ["preferences", [], {}]),
-					null,
-					Gio.DBusCallFlags.NONE,
-					-1,
-					null,
-				);
-			});
-			this.menu.addMenuItem(preferencesItem);
-
-			const accountsItem = new PopupMenu.PopupMenuItem(_("Accounts"));
-			accountsItem.connect("activate", () => {
-				this.conn?.call(
-					GEARY_BUS_NAME,
-					GEARY_OBJECT_PATH,
-					INTERFACE_APPLICATION,
-					"ActivateAction",
-					new GLib.Variant("(sava{sv})", ["accounts", [], {}]),
-					null,
-					Gio.DBusCallFlags.NONE,
-					-1,
-					null,
-				);
-			});
-			this.menu.addMenuItem(accountsItem);
-
-			this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-			const quitItem = new PopupMenu.PopupMenuItem(_("Quit Geary"));
-			quitItem.connect("activate", () => {
-				this.conn?.call(
-					GEARY_BUS_NAME,
-					GEARY_OBJECT_PATH,
-					INTERFACE_APPLICATION,
-					"ActivateAction",
-					new GLib.Variant("(sava{sv})", ["quit", [], {}]),
-					null,
-					Gio.DBusCallFlags.NONE,
-					-1,
-					null,
-				);
-			});
-			this.menu.addMenuItem(quitItem);
+			this.bindUnreadSignals();
+			this.buildMenu();
 		}
 
 		public destroy() {
-			this.conn = null;
-
 			this.icon?.destroy();
 			this.icon = null;
-			if (this.sourceAddId) {
-				Main.messageTray.disconnect(this.sourceAddId);
-				this.sourceAddId = null;
+			if (this.sourceAddedId) {
+				Main.messageTray.disconnect(this.sourceAddedId);
+				this.sourceAddedId = null;
 			}
-			if (this.sourceRemoved) {
-				Main.messageTray.disconnect(this.sourceRemoved);
-				this.sourceRemoved = null;
+			if (this.sourceRemovedId) {
+				Main.messageTray.disconnect(this.sourceRemovedId);
+				this.sourceRemovedId = null;
 			}
 
 			super.destroy();
 		}
 
-		private updateIcon() {
-			this.icon?.setHasUnread(this.hasUnread);
+		private addMenuAction(label: string, activate: () => void) {
+			const item = new PopupMenu.PopupMenuItem(label);
+			item.connect("activate", activate);
+			this.menu.addMenuItem(item);
+		}
+
+		private bindUnreadSignals() {
+			this.sourceAddedId = Main.messageTray.connect(
+				"source-added",
+				(_, source) => {
+					if (isGearySource(source)) this.syncUnread();
+				},
+			);
+			this.sourceRemovedId = Main.messageTray.connect(
+				"source-removed",
+				(_, source) => {
+					if (isGearySource(source)) this.syncUnread();
+				},
+			);
+		}
+
+		private buildMenu() {
+			this.addMenuAction(_("Open Geary Mailbox"), () => activateGeary());
+			this.addMenuAction(_("Compose Message"), () =>
+				activateGearyAction("compose"),
+			);
+			this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+			this.addMenuAction(_("Preferences"), () =>
+				activateGearyAction("preferences"),
+			);
+			this.addMenuAction(_("Accounts"), () => activateGearyAction("accounts"));
+			this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+			this.addMenuAction(_("Quit Geary"), () => activateGearyAction("quit"));
+		}
+
+		private syncUnread() {
+			this.icon?.setHasUnread(gearyHasUnread());
 		}
 	},
 );
