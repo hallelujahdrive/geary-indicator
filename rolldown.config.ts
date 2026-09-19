@@ -9,7 +9,6 @@ const replace = (): RolldownPlugin => {
 		transform(code) {
 			return {
 				code: code
-					.replaceAll(/\s*\/\/ begin-remove[\s\S]+?\/\/ end-remove/g, "")
 					.replaceAll(/\s*\/\*[\s\S]+?\*\//g, "")
 					.replaceAll(/^\s*\/\/.*?\n/gm, ""),
 				map: { mappings: "" },
@@ -24,7 +23,7 @@ export function removeRuntimeHelper(): RolldownPlugin {
 		renderChunk(code) {
 			// remove runtime helper
 			const cleaned = code
-				.replace(/import ".\/chunk-[a-z0-9_!~{}]+\.js";\n?/g, "")
+				.replace(/import ".\/rolldown-chunk-[a-z0-9_!~{}-]+\.js";\n?/g, "")
 				.replace(
 					/\/\/#region \\0rolldown\/runtime.js[\s\S]+?\/\/#endregion/g,
 					"",
